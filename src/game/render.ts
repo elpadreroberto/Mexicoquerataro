@@ -34,6 +34,11 @@ const FRONT_SRC: Record<Exclude<VehicleKind, "player">, "hatchFront" | "sedanFro
   police: "sedanFront",
 };
 
+function assetUrl(path: string) {
+  const base = (import.meta.env.BASE_URL ?? "/").replace(/\/?$/, "/");
+  return `${base}${path.replace(/^\//, "")}`;
+}
+
 function rAt(s: DrawState, sy: number) {
   return roadAt(sy, s.w, s.h, s.cameraY, s.playerY, s.levelId);
 }
@@ -388,15 +393,15 @@ export function loadAssets(): Promise<Assets> {
       img.src = src;
     });
   return Promise.all([
-    ...names.map((n) => load(`/sprites/${n}.png?v=2`)),
-    load("/sprites/hatch-front.png?v=1"),
-    load("/sprites/sedan-front.png?v=1"),
-    load("/sprites/taxi-front.png?v=1"),
-    load("/sprites/suv-front.png?v=1"),
-    load("/sprites/explode-1.png"),
-    load("/sprites/explode-2.png"),
-    load("/sprites/explode-3.png"),
-    load("/sprites/explode-4.png"),
+    ...names.map((n) => load(assetUrl(`sprites/${n}.png?v=2`))),
+    load(assetUrl("sprites/hatch-front.png?v=1")),
+    load(assetUrl("sprites/sedan-front.png?v=1")),
+    load(assetUrl("sprites/taxi-front.png?v=1")),
+    load(assetUrl("sprites/suv-front.png?v=1")),
+    load(assetUrl("sprites/explode-1.png")),
+    load(assetUrl("sprites/explode-2.png")),
+    load(assetUrl("sprites/explode-3.png")),
+    load(assetUrl("sprites/explode-4.png")),
   ]).then((imgs) => ({
     player: imgs[0]!,
     hatch: imgs[1]!,
