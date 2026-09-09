@@ -102,6 +102,55 @@
   min-width: 72px;
 }
 
+.hud-chip-wide {
+  flex: 1.4;
+  min-width: 0;
+}
+
+.hud-route {
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+.hud-tools {
+  position: absolute;
+  top: max(88px, calc(env(safe-area-inset-top) + 72px));
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+  z-index: 3;
+}
+
+.hud-tool {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 8px;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--color-bg) 72%, transparent);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hud-tool-accent {
+  color: var(--color-accent-fg);
+  background: var(--color-accent);
+  border-color: transparent;
+}
+
+.hud-tool:disabled {
+  opacity: 0.35;
+}
+
 .hud-actions {
   pointer-events: auto;
   display: flex;
@@ -212,7 +261,7 @@
   background: var(--color-surface-2);
   padding: 12px;
   color: var(--color-fg);
-  min-height: 72px;
+  min-height: 88px;
 }
 
 .level-cell[data-locked="true"] {
@@ -221,7 +270,7 @@
 
 .ticket-chip {
   position: absolute;
-  top: max(88px, calc(env(safe-area-inset-top) + 72px));
+  top: max(136px, calc(env(safe-area-inset-top) + 120px));
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-display);
@@ -330,7 +379,7 @@
 
 .wrong-chip {
   position: absolute;
-  top: max(88px, calc(env(safe-area-inset-top) + 72px));
+  top: max(136px, calc(env(safe-area-inset-top) + 120px));
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-display);
