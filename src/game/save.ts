@@ -1,5 +1,9 @@
+import type { Difficulty } from "./types";
+
 const KEY = "rebase-save-v1";
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;
+
+const DIFFICULTIES: Difficulty[] = ["basico", "medio", "avanzado", "pro"];
 
 export interface SaveData {
   version: number;
@@ -7,6 +11,7 @@ export interface SaveData {
   bestOvertakes: number;
   unlocked: number;
   muted: boolean;
+  difficulty: Difficulty;
 }
 
 const defaults: SaveData = {
@@ -15,6 +20,7 @@ const defaults: SaveData = {
   bestOvertakes: 0,
   unlocked: 1,
   muted: false,
+  difficulty: "medio",
 };
 
 function migrate(raw: SaveData): SaveData {
@@ -23,6 +29,7 @@ function migrate(raw: SaveData): SaveData {
   s.highScore = Math.max(0, s.highScore | 0);
   s.bestOvertakes = Math.max(0, s.bestOvertakes | 0);
   s.muted = Boolean(s.muted);
+  s.difficulty = DIFFICULTIES.includes(s.difficulty) ? s.difficulty : "medio";
   return s;
 }
 

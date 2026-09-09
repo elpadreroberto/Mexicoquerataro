@@ -2,11 +2,13 @@ export type Lane = number;
 export type Theme = "day" | "dusk" | "night" | "rain";
 export type VehicleKind = "player" | "hatch" | "sedan" | "taxi" | "suv" | "truck" | "police";
 export type Phase = "attract" | "playing" | "paused" | "clear" | "dying" | "over";
+export type Difficulty = "basico" | "medio" | "avanzado" | "pro";
 
 export interface LevelDef {
   id: number;
   name: string;
   place: string;
+  route: string;
   blurb: string;
   goal: number;
   speed: number;
@@ -61,7 +63,9 @@ export interface Hud {
   level: number;
   levelName: string;
   place: string;
+  route: string;
   blurb: string;
+  difficulty: Difficulty;
   speedKmh: number;
   distanceM: number;
   combo: number;
