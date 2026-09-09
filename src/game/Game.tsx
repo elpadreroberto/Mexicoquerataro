@@ -1,16 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsDown,
-  Pause,
-  Play,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsDown, Play } from "lucide-react";
 import { createEngine, type Engine } from "./engine";
 import { drawWorld, emptyAssets, loadAssets } from "./render";
-import { LEVELS } from "./levels";
+import { DIFFICULTY_LABEL, LEVELS } from "./levels";
+import { HudBar } from "./HudBar";
 import * as audio from "./audio";
 import type { Hud } from "./types";
 
@@ -73,7 +66,7 @@ export function Game() {
       engine.tick(dt, keysRef.current, cssW, cssH);
       drawWorld(ctx, engine.snapshot(), assets);
       const next = engine.hud();
-      const key = `${next.phase}|${next.score}|${next.overtakes}|${next.level}|${next.banner}|${next.muted}|${next.speedKmh}|${next.goal}|${next.wrongWay}|${next.fines}|${next.ticket}|${Math.round(next.throttle * 24)}`;
+      const key = `${next.phase}|${next.score}|${next.overtakes}|${next.level}|${next.banner}|${next.muted}|${next.speedKmh}|${next.goal}|${next.wrongWay}|${next.fines}|${next.ticket}|${next.difficulty}|${Math.round(next.throttle * 24)}`;
       if (key !== hudKey.current) {
         hudKey.current = key;
         setHud(next);
@@ -196,37 +189,7 @@ export function Game() {
 
       {playing && hud && (
         <>
-          <div className="hud">
-            <div className="hud-chip">
-              <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">Nivel {hud.level}</div>
-              <div className="font-display text-lg leading-tight tracking-wide">{hud.levelName}</div>
-            </div>
-            <div className="hud-chip text-center">
-              <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">Rebases</div>
-              <div className="font-display text-lg leading-tight tabular-nums">
-                {hud.goal > 0 ? `${hud.overtakes}/${hud.goal}` : hud.overtakes}
-              </div>
-            </div>
-            <div className="hud-chip text-right">
-              <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">Puntos</div>
-              <div className="font-display text-lg leading-tight tabular-nums">{hud.score}</div>
-            </div>
-          </div>
-          <div className="absolute right-3 top-[92px] hud-actions" style={{ top: "max(92px, calc(env(safe-area-inset-top) + 76px))" }}>
-            <button className="icon-btn" aria-label="Pausa" onClick={() => engineRef.current?.pause()}>
-              <Pause size={18} />
-            </button>
-            <button
-              className="icon-btn"
-              aria-label={hud.muted ? "Activar sonido" : "Silenciar"}
-              onClick={() => {
-                gestureUnlock();
-                engineRef.current?.setMuted(!hud.muted);
-              }}
-            >
-              {hud.muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-            </button>
-          </div>
+          <HudBar hud={hud} engine={engineRef.current} onUnlockAudio={gestureUnlock} />
           {hud.ticket ? <div className="ticket-chip">Multa</div> : null}
           {hud.wrongWay ? <div className="wrong-chip">Sentido contrario</div> : null}
           {hud.banner ? (
@@ -295,6 +258,15 @@ export function Game() {
               <button className="btn btn-primary" onClick={() => play(1)}>
                 Jugar
               </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  gestureUnlock();
+                  engineRef.current?.cycleDifficulty();
+                }}
+              >
+                Dificultad: {hud ? DIFFICULTY_LABEL[hud.difficulty] : "Medio"}
+              </button>
               <button className="btn btn-secondary" onClick={() => setMenu("levels")}>
                 Niveles
               </button>
@@ -333,6 +305,7 @@ export function Game() {
                 <span className="text-fg">↑</span> acelera · <span className="text-fg">↓</span> frena. La barra bajo la velocidad lo muestra.
               </li>
               <li>Desde el segundo tramo la pista curva y vienen autos de frente.</li>
+              <li>Arriba: Tramo salta de circuito. El botón del centro cambia Básico, Medio, Avanzado o Pro.</li>
               <li>En el teléfono: desliza, botones de carril y el botón de freno.</li>
             </ul>
             <button className="btn btn-primary mt-6" onClick={() => setMenu("title")}>
@@ -361,7 +334,7 @@ export function Game() {
                       {locked ? "Cerrado" : `Nivel ${lv.id}`}
                     </div>
                     <div className="font-display text-lg leading-tight mt-1">{lv.name}</div>
-                    <div className="text-xs text-faint mt-0.5">{lv.place}</div>
+                    <div className="text-xs text-faint mt-0.5">{lv.route}</div>
                   </button>
                 );
               })}
@@ -378,7 +351,7 @@ export function Game() {
           <div className="panel">
             <h2 className="font-display text-3xl tracking-[0.08em] uppercase">Pausa</h2>
             <p className="mt-2 text-sm text-muted">
-              {hud.levelName} · {hud.place}
+              {hud.levelName} · {hud.route}
             </p>
             <div className="mt-6 flex flex-col gap-2">
               <button className="btn btn-primary" onClick={() => engineRef.current?.resume()}>
