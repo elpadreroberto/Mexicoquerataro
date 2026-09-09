@@ -305,7 +305,7 @@ export function Game() {
                 <span className="text-fg">↑</span> acelera · <span className="text-fg">↓</span> frena. La barra bajo la velocidad lo muestra.
               </li>
               <li>Desde el segundo tramo la pista curva y vienen autos de frente.</li>
-              <li>Arriba: Tramo salta de circuito. El botón del centro cambia Básico, Medio, Avanzado o Pro.</li>
+              <li>A los lados, sobre el pasto: Tramo salta de circuito. El botón de dificultad cambia Básico, Medio, Avanzado o Pro.</li>
               <li>En el teléfono: desliza, botones de carril y el botón de freno.</li>
             </ul>
             <button className="btn btn-primary mt-6" onClick={() => setMenu("title")}>
