@@ -142,10 +142,14 @@ function authPopupPlugin(): Plugin {
   };
 }
 
+const isGitHubPages = process.env.GITHUB_PAGES === "true";
+const pagesBase = "/Mexicoquerataro/";
+
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => ({
+  base: isGitHubPages ? pagesBase : "/",
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -166,8 +170,21 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
-    ...(command === "build" || isPreview
+    tanstackStart(
+      isGitHubPages
+        ? {
+            spa: {
+              enabled: true,
+              prerender: {
+                enabled: true,
+                outputPath: "/index.html",
+                crawlLinks: true,
+              },
+            },
+          }
+        : {},
+    ),
+    ...(!isGitHubPages && (command === "build" || isPreview)
       ? [
           nitro({
             preset: "vercel",
