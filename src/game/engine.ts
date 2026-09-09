@@ -1,5 +1,15 @@
-import { LEVELS, MAX_SPEED } from "./levels";
-import type { DrawState, Floater, Hud, Lane, Particle, Phase, TrafficCar, VehicleKind } from "./types";
+import { DIFFICULTY_LABEL, DIFFICULTY_ORDER, LEVELS, MAX_SPEED, tuneLevel } from "./levels";
+import type {
+  Difficulty,
+  DrawState,
+  Floater,
+  Hud,
+  Lane,
+  Particle,
+  Phase,
+  TrafficCar,
+  VehicleKind,
+} from "./types";
 import { loadSave, writeSave, type SaveData } from "./save";
 import * as audio from "./audio";
 import { clamp, laneX, LANE_MIN, LANE_MAX } from "./road";
@@ -19,6 +29,8 @@ const RAM_SPEED = 70;
 export interface Engine {
   tick: (dt: number, keys: Set<string>, canvasW: number, canvasH: number) => void;
   startRun: (levelId: number) => void;
+  skipLevel: (dir: number) => void;
+  cycleDifficulty: () => void;
   pause: () => void;
   resume: () => void;
   retry: () => void;
@@ -86,6 +98,7 @@ export function createEngine(): Engine {
   let ticketT = 0;
   let ticketCd = 0;
   let throttle = 0;
+  let difficulty: Difficulty = save.difficulty;
 
   const traffic: TrafficCar[] = Array.from({ length: POOL }, () => ({
     id: 0,
@@ -127,10 +140,6 @@ export function createEngine(): Engine {
 
   function playerScreenY() {
     return h * 0.78;
-  }
-
-  function screenY(worldY: number) {
-    return playerScreenY() - (worldY - playerWorldY);
   }
 
   function persist() {
@@ -203,8 +212,12 @@ export function createEngine(): Engine {
     car.oncoming = oncoming;
   }
 
+  function currentLevel() {
+    return tuneLevel(LEVELS[levelIndex]!, difficulty);
+  }
+
   function spawnRow(atY: number, forceLane?: Lane) {
-    const lv = LEVELS[levelIndex]!;
+    const lv = currentLevel();
     const blocked = (lane: Lane) =>
       traffic.some(
         (c) => c.active && c.lane === lane && Math.abs(c.worldY - atY) < Math.max(c.length, CAR_LEN) * 1.8,
@@ -234,8 +247,8 @@ export function createEngine(): Engine {
   }
 
   function spawnOncoming(atY: number) {
-    const lv = LEVELS[levelIndex]!;
-    if (lv.id < 2) return;
+    const lv = currentLevel();
+    if (lv.id < 2 && difficulty !== "pro") return;
     const blocked = (lane: Lane) =>
       traffic.some(
         (c) => c.active && c.lane === lane && Math.abs(c.worldY - atY) < Math.max(c.length, CAR_LEN) * 1.6,
@@ -258,7 +271,7 @@ export function createEngine(): Engine {
 
   function configureLevel(idx: number, keepScore: boolean) {
     levelIndex = clamp(idx, 0, LEVELS.length - 1);
-    const lv = LEVELS[levelIndex]!;
+    const lv = currentLevel();
     speed = lv.speed;
     if (!keepScore) {
       score = 0;
@@ -287,12 +300,14 @@ export function createEngine(): Engine {
     banner = lv.id === 8 ? "INFINITO" : `NIVEL ${lv.id}`;
     bannerT = 1.6;
     clearPool();
-    spawnRow(playerWorldY + 380, 0);
-    spawnRow(playerWorldY + 620, 2);
-    spawnRow(playerWorldY + 900, 0);
-    nextSpawnY = playerWorldY + 1100;
-    nextOppY = playerWorldY + 700;
-    if (lv.id >= 2) spawnOncoming(playerWorldY + 820);
+    nextSpawnY = playerWorldY + 260;
+    nextOppY = playerWorldY + 520;
+    const seedGap = Math.max(150, lv.spawnDistance);
+    for (let i = 0; i < 7; i++) {
+      spawnRow(nextSpawnY, i % 2 === 0 ? 0 : 2);
+      nextSpawnY += seedGap + rand(0, 28);
+    }
+    if (lv.id >= 2 || difficulty === "pro") spawnOncoming(playerWorldY + 640);
   }
 
   function startSwitch(next: Lane) {
@@ -316,7 +331,7 @@ export function createEngine(): Engine {
   function beginAttract() {
     phase = "attract";
     playerWorldY = 0;
-    configureLevel(1, false);
+    configureLevel(0, false);
     invuln = 999;
     banner = "";
     audio.updateEngine(speed, false);
@@ -365,7 +380,7 @@ export function createEngine(): Engine {
 
   function step(dt: number, keys: Set<string>) {
     noiseT += dt;
-    const lv = LEVELS[levelIndex]!;
+    const lv = currentLevel();
     const left =
       keys.has("KeyA") ||
       keys.has("ArrowLeft") ||
@@ -451,16 +466,16 @@ export function createEngine(): Engine {
 
     if (phase === "playing") {
       const rel = Math.max(40, speed - lv.traffic);
-      const gap = Math.max(lv.spawnDistance, rel * 0.85, 220);
-      const lookAhead = Math.max(h * 0.9, rel * 1.35);
+      const gap = Math.max(132, lv.spawnDistance, rel * 0.52);
+      const lookAhead = Math.max(640, h * 0.72, rel * 1.8);
       while (playerWorldY + lookAhead > nextSpawnY) {
         spawnRow(nextSpawnY);
-        nextSpawnY += gap + rand(0, 36);
+        nextSpawnY += gap + rand(0, 28);
       }
-      if (lv.id >= 2) {
+      if (lv.id >= 2 || difficulty === "pro") {
         while (playerWorldY + lookAhead > nextOppY) {
           spawnOncoming(nextOppY);
-          nextOppY += 320 + rand(0, 160);
+          nextOppY += 280 + rand(0, 140);
         }
       }
     } else if (phase === "attract") {
@@ -482,8 +497,7 @@ export function createEngine(): Engine {
     for (const car of traffic) {
       if (!car.active) continue;
       car.worldY += car.speed * dt;
-      const sy = screenY(car.worldY);
-      if (sy > h + 160 || sy < -80 || car.worldY < playerWorldY - 240) {
+      if (car.worldY < playerWorldY - 280) {
         car.active = false;
         continue;
       }
@@ -643,6 +657,30 @@ export function createEngine(): Engine {
       }
     },
     startRun,
+    skipLevel(dir: number) {
+      const next = clamp(levelIndex + Math.sign(dir || 1), 0, LEVELS.length - 1);
+      if (next === levelIndex) return;
+      if (next + 1 > save.unlocked) {
+        save.unlocked = Math.min(8, next + 1);
+        writeSave(save);
+      }
+      configureLevel(next, true);
+      if (phase === "paused" || phase === "clear" || phase === "over" || phase === "dying") {
+        phase = "playing";
+      }
+      audio.startEngine();
+      audio.updateEngine(speed, true);
+    },
+    cycleDifficulty() {
+      const i = DIFFICULTY_ORDER.indexOf(difficulty);
+      difficulty = DIFFICULTY_ORDER[(i + 1) % DIFFICULTY_ORDER.length]!;
+      save.difficulty = difficulty;
+      writeSave(save);
+      const lv = currentLevel();
+      speed = lv.speed;
+      banner = DIFFICULTY_LABEL[difficulty].toUpperCase();
+      bannerT = 1.2;
+    },
     pause() {
       if (phase === "playing") phase = "paused";
     },
@@ -672,7 +710,7 @@ export function createEngine(): Engine {
       beginAttract();
     },
     hud() {
-      const lv = LEVELS[levelIndex]!;
+      const lv = currentLevel();
       return {
         phase,
         score: Math.floor(score),
@@ -683,7 +721,9 @@ export function createEngine(): Engine {
         level: lv.id,
         levelName: lv.name,
         place: lv.place,
+        route: lv.route,
         blurb: lv.blurb,
+        difficulty,
         speedKmh: Math.round(78 + speed * 0.18),
         distanceM: Math.floor(distance),
         combo,
@@ -703,7 +743,7 @@ export function createEngine(): Engine {
       writeSave(save);
     },
     snapshot() {
-      const lv = LEVELS[levelIndex]!;
+      const lv = currentLevel();
       const shake = reduced ? trauma * 2 : trauma * trauma * 14;
       const nx = Math.sin(noiseT * 37.1);
       const ny = Math.cos(noiseT * 29.4);
