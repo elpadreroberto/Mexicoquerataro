@@ -15,24 +15,26 @@ export function HudBar({
   return (
     <>
       <div className="hud">
-        <div className="hud-chip hud-chip-wide">
+        <div className="hud-chip hud-chip-level">
           <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">
             Nivel {hud.level} · {hud.levelName}
           </div>
           <div className="hud-route">{hud.route}</div>
         </div>
-        <div className="hud-chip text-center">
-          <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">Rebases</div>
-          <div className="font-display text-lg leading-tight tabular-nums">
-            {hud.goal > 0 ? `${hud.overtakes}/${hud.goal}` : hud.overtakes}
+        <div className="hud-stats">
+          <div className="hud-chip text-center">
+            <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">Rebases</div>
+            <div className="font-display text-lg leading-tight tabular-nums">
+              {hud.goal > 0 ? `${hud.overtakes}/${hud.goal}` : hud.overtakes}
+            </div>
+          </div>
+          <div className="hud-chip text-right">
+            <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">Puntos</div>
+            <div className="font-display text-lg leading-tight tabular-nums">{hud.score}</div>
           </div>
         </div>
-        <div className="hud-chip text-right">
-          <div className="font-display text-[11px] tracking-[0.18em] text-muted uppercase">Puntos</div>
-          <div className="font-display text-lg leading-tight tabular-nums">{hud.score}</div>
-        </div>
       </div>
-      <div className="hud-tools">
+      <div className="hud-rail hud-rail-left">
         <button
           className="hud-tool"
           aria-label="Tramo anterior"
@@ -41,6 +43,11 @@ export function HudBar({
         >
           ← Tramo
         </button>
+        <button className="icon-btn" aria-label="Pausa" onClick={() => engine?.pause()}>
+          <Pause size={18} />
+        </button>
+      </div>
+      <div className="hud-rail hud-rail-right">
         <button className="hud-tool hud-tool-accent" aria-label="Cambiar dificultad" onClick={() => engine?.cycleDifficulty()}>
           {DIFFICULTY_LABEL[hud.difficulty]}
         </button>
@@ -51,9 +58,6 @@ export function HudBar({
           onClick={() => engine?.skipLevel(1)}
         >
           Tramo →
-        </button>
-        <button className="icon-btn" aria-label="Pausa" onClick={() => engine?.pause()}>
-          <Pause size={18} />
         </button>
         <button
           className="icon-btn"
