@@ -101,13 +101,30 @@ function drawSunMoon(ctx: CanvasRenderingContext2D, s: DrawState) {
 function drawHills(ctx: CanvasRenderingContext2D, s: DrawState) {
   const horizon = s.h * HORIZON_T;
   const shift = curveBend(s.cameraY + 700, s.levelId) * 120;
+  const farPeak = s.h * 0.11;
+  const nearPeak = s.h * 0.07;
+
+  ctx.fillStyle = s.theme === "day" ? "#5a6b6e" : s.theme === "dusk" ? "#262320" : "#090b0f";
+  ctx.beginPath();
+  ctx.moveTo(0, horizon);
+  ctx.lineTo(0, horizon - farPeak * 0.3);
+  ctx.quadraticCurveTo(s.w * 0.1 + shift * 0.22, horizon - farPeak, s.w * 0.22 + shift * 0.18, horizon - farPeak * 0.38);
+  ctx.quadraticCurveTo(s.w * 0.38 + shift * 0.28, horizon - farPeak * 1.18, s.w * 0.52 + shift * 0.16, horizon - farPeak * 0.34);
+  ctx.quadraticCurveTo(s.w * 0.68 + shift * 0.2, horizon - farPeak * 1.08, s.w * 0.82 + shift * 0.1, horizon - farPeak * 0.3);
+  ctx.quadraticCurveTo(s.w * 0.92 + shift * 0.08, horizon - farPeak * 0.78, s.w, horizon - farPeak * 0.22);
+  ctx.lineTo(s.w, horizon);
+  ctx.closePath();
+  ctx.fill();
+
   ctx.fillStyle = s.theme === "day" ? "#4d5c4a" : s.theme === "dusk" ? "#2b2a28" : "#0c0e12";
   ctx.beginPath();
-  ctx.moveTo(0, horizon + 18);
-  ctx.quadraticCurveTo(s.w * 0.25 + shift, horizon - 36, s.w * 0.5 + shift * 0.5, horizon + 8);
-  ctx.quadraticCurveTo(s.w * 0.75 + shift, horizon - 22, s.w, horizon + 14);
-  ctx.lineTo(s.w, s.h);
-  ctx.lineTo(0, s.h);
+  ctx.moveTo(0, horizon);
+  ctx.lineTo(0, horizon - nearPeak * 0.22);
+  ctx.quadraticCurveTo(s.w * 0.18 + shift, horizon - nearPeak * 1.12, s.w * 0.34 + shift * 0.55, horizon - nearPeak * 0.26);
+  ctx.quadraticCurveTo(s.w * 0.52 + shift * 0.45, horizon - nearPeak * 0.98, s.w * 0.7 + shift * 0.3, horizon - nearPeak * 0.2);
+  ctx.quadraticCurveTo(s.w * 0.86 + shift * 0.22, horizon - nearPeak * 0.78, s.w, horizon + 2);
+  ctx.lineTo(s.w, horizon);
+  ctx.closePath();
   ctx.fill();
 }
 
