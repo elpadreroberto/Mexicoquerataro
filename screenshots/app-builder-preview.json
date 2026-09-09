@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "REBASE",
+      "hasCanvas": true,
+      "bodyTextLen": 148,
+      "bodyTextHash": "b3b4efd7bf7877c55ba1e6c70531892dcd62781c584fa788d038ec5c206eb9af",
+      "bodyTextPrefix": "AUTOPISTA REBASE Adelanta por los carriles, el acotamiento o el ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "REBASE",
+      "hasCanvas": true,
+      "bodyTextLen": 148,
+      "bodyTextHash": "b3b4efd7bf7877c55ba1e6c70531892dcd62781c584fa788d038ec5c206eb9af",
+      "bodyTextPrefix": "AUTOPISTA REBASE Adelanta por los carriles, el acotamiento o el ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
